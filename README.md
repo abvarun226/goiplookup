@@ -26,7 +26,7 @@ func main() {
 	h := geoiplookup.New(
 		geoiplookup.WithDBPath(DBPath),
 		geoiplookup.WithClient(&http.Client{Timeout: 60 * time.Minute}),
-		// geoiplookup.WithDownloadRIRFiles(),
+		geoiplookup.WithDownloadRIRFiles(),
 	)
 	defer h.Close()
 
