@@ -1,5 +1,6 @@
 # Geo IP Lookup
 
+[![GoDoc](https://godoc.org/github.com/abvarun226/geoiplookup?status.svg)](https://godoc.org/github.com/abvarun226/geoiplookup)
 [![Go Report Card](https://goreportcard.com/badge/github.com/abvarun226/geoiplookup)](https://goreportcard.com/report/github.com/abvarun226/geoiplookup)
 
 This library maps an IP address to a country
