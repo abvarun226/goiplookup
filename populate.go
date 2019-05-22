@@ -157,7 +157,6 @@ func (h *Handler) handleIP(ip, country, mask, ipVersion string) error {
 	return nil
 }
 
-
 func computeSubnet(ipstart string, ipcount, byteCount int) string {
 	mask := byteCount - int(math.Log2(float64(ipcount)))
 	return ipstart + "/" + strconv.Itoa(mask)
