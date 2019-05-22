@@ -24,7 +24,11 @@ func main() {
 	defer h.Close()
 
 	for _, ip := range ips {
-		fmt.Printf("%15s : %s\n", ip, h.Lookup(ip))
+		country, err := h.Lookup(ip)
+		if err != nil {
+			fmt.Printf("error when looking up ip addres: %v", err)
+		}
+		fmt.Printf("%15s : %s\n", ip, country)
 	}
 }
 
