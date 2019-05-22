@@ -96,48 +96,74 @@ func (h *Handler) lookup(ip, ipVersion string) string {
 	return countryCode
 }
 
+// IterateDB iterates over a given bucket in DB.
+func (h *Handler) IterateDB() {
+	if err := h.Db.View(func(tx *bolt.Tx) error {
+		return tx.Bucket([]byte(BoltBucketv6)).ForEach(func(k []byte, v []byte) error {
+			log.Printf("key = %s , value = %s", string(k), string(v))
+			return nil
+		})
+	}); err != nil {
+		log.Printf("failed to iterate: %v", err)
+	}
+}
+
 // PopulateData extracts the geoip data for each RIR and populates the database.
 func (h *Handler) PopulateData() error {
-	// Create IPv4 bucket in db.
-	if err := h.CreateBucket(BoltBucketv4); err != nil {
-		return errors.Wrap(err, "failed to create ipv4 bucket in db")
-	}
+	h.InitializeBuckets()
 
-	// Create IPv6 bucket in db.
-	if err := h.CreateBucket(BoltBucketv6); err != nil {
-		return errors.Wrap(err, "failed to create ipv6 bucket in db")
-	}
-
-	var g errgroup.Group
 	fileNames := make([]string, 0)
 
 	for _, rirURL := range GeoIPDataURLs {
-		log.Printf("downloading %s", rirURL)
-
 		u, _ := url.Parse(rirURL)
 		fileName := path.Base(u.EscapedPath())
 		fileNames = append(fileNames, fileName)
+	}
+
+	// Download the RIR files with ip data
+	if h.Opts.DownloadRIRFiles {
+		if err := h.downloadRIRFiles(); err != nil {
+			return errors.Wrap(err, "failed to download rir files")
+		}
+	}
+
+	// Process the RIR files with ip data
+	if err := h.processRIRFiles(fileNames); err != nil {
+		return errors.Wrap(err, "failed to process rir files")
+	}
+
+	return nil
+}
+
+// downloadRIRFiles downloads the geoip data to files.
+func (h *Handler) downloadRIRFiles() error {
+	var g errgroup.Group
+
+	for _, rirURL := range GeoIPDataURLs {
+		currURL := rirURL
+		u, _ := url.Parse(currURL)
+		fileName := path.Base(u.EscapedPath())
 
 		g.Go(func() error {
-			// Download the RIR files with geoip data.
-			if h.Opts.DownloadRIRFiles {
-				rsp, err := h.Opts.HTTPClient.Get(rirURL)
-				if err != nil {
-					return errors.Wrap(err, "failed to get geoip data")
-				}
-				if rsp.StatusCode != http.StatusOK {
-					return errors.Errorf("failed to get geoip data with status %d", rsp.StatusCode)
-				}
-				defer rsp.Body.Close()
-
-				file, err := os.Create(fileName)
-				if err != nil {
-					return errors.Wrap(err, "failed to create local file")
-				}
-				defer file.Close()
-
-				io.Copy(file, rsp.Body)
+			log.Printf("downloading %s", currURL)
+			rsp, err := h.Opts.HTTPClient.Get(currURL)
+			if err != nil {
+				return errors.Wrap(err, "failed to get geoip data")
 			}
+			if rsp.StatusCode != http.StatusOK {
+				return errors.Errorf("failed to get geoip data with status %d", rsp.StatusCode)
+			}
+			defer rsp.Body.Close()
+
+			log.Printf("saving data to file: %s", fileName)
+			file, err := os.Create(fileName)
+			if err != nil {
+				return errors.Wrap(err, "failed to create local file")
+			}
+			defer file.Close()
+
+			io.Copy(file, rsp.Body)
+
 			return nil
 		})
 	}
@@ -145,11 +171,19 @@ func (h *Handler) PopulateData() error {
 		return err
 	}
 
-	for _, fileName := range fileNames {
-		log.Printf("processing %s", fileName)
+	return nil
+}
 
-		// Process the downloaded RIR files with geoip data
+// processRIRFiles processes the downloaded rir files and updates db.
+func (h *Handler) processRIRFiles(fileNames []string) error {
+	var g errgroup.Group
+
+	for _, f := range fileNames {
+		fileName := f
+
 		g.Go(func() error {
+			log.Printf("processing %s", fileName)
+
 			file, err := os.Open(fileName)
 			if err != nil {
 				return errors.Wrapf(err, "failed to open file %s", fileName)
@@ -176,22 +210,8 @@ func (h *Handler) PopulateData() error {
 			return nil
 		})
 	}
-	if err := g.Wait(); err != nil {
-		return err
-	}
 
-	return nil
-}
-
-// CreateBucket creates the given bucket in boltdb if it doesn't exist.
-func (h *Handler) CreateBucket(bucket string) error {
-	if err := h.Db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucket([]byte(bucket))
-		return err
-	}); err != nil && err != bolt.ErrBucketExists {
-		return errors.Wrap(err, "failed to update k/v in db")
-	}
-	return nil
+	return g.Wait()
 }
 
 func (h *Handler) handleIP(ip, country, mask, ipVersion string) error {
@@ -209,6 +229,10 @@ func (h *Handler) handleIP(ip, country, mask, ipVersion string) error {
 		return errors.New("unrecognised ip version")
 	}
 
+	if country == "" {
+		return errors.New("country not set")
+	}
+
 	count, err := strconv.Atoi(mask)
 	if err != nil {
 		return errors.Wrap(err, "failed to parse ip mask")
@@ -221,6 +245,32 @@ func (h *Handler) handleIP(ip, country, mask, ipVersion string) error {
 		return errors.Wrap(err, "failed to update k/v in db")
 	}
 
+	return nil
+}
+
+// InitializeBuckets handler initializes the buckets in DB.
+func (h *Handler) InitializeBuckets() error {
+	// Create IPv4 bucket in db.
+	if err := h.createBucket(BoltBucketv4); err != nil {
+		return errors.Wrap(err, "failed to create ipv4 bucket in db")
+	}
+
+	// Create IPv6 bucket in db.
+	if err := h.createBucket(BoltBucketv6); err != nil {
+		return errors.Wrap(err, "failed to create ipv6 bucket in db")
+	}
+
+	return nil
+}
+
+// CreateBucket creates the given bucket in boltdb if it doesn't exist.
+func (h *Handler) createBucket(bucket string) error {
+	if err := h.Db.Update(func(tx *bolt.Tx) error {
+		_, err := tx.CreateBucket([]byte(bucket))
+		return err
+	}); err != nil && err != bolt.ErrBucketExists {
+		return errors.Wrap(err, "failed to update k/v in db")
+	}
 	return nil
 }
 
