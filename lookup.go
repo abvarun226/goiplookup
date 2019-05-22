@@ -74,4 +74,3 @@ func (h *Handler) IterateDB(bucket string) error {
 
 	return nil
 }
-

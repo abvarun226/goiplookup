@@ -59,7 +59,6 @@ func (h *Handler) createBucket(bucket string) error {
 	return nil
 }
 
-
 var (
 	// GeoIPDataURLs is the string slice containing URL for each RIR.
 	GeoIPDataURLs = []string{Arin, RipeNcc, Apnic, Afrinic, Lacnic}
