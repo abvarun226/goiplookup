@@ -24,7 +24,7 @@ func main() {
 	defer h.Close()
 
 	for _, ip := range ips {
-		fmt.Printf("%15s : %s\n", ip, h.Lookupv4(ip))
+		fmt.Printf("%15s : %s\n", ip, h.Lookup(ip))
 	}
 }
 

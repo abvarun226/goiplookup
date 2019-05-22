@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/asaskevich/govalidator"
 	"github.com/pkg/errors"
 	bolt "go.etcd.io/bbolt"
 	"golang.org/x/sync/errgroup"
@@ -44,18 +45,45 @@ func (h *Handler) Close() {
 	h.Db.Close()
 }
 
-// Lookupv4 returns the country code given the ipv4 address.
-func (h *Handler) Lookupv4(ip string) string {
+// Lookup returns the country code given the ipv4/ipv6 address.
+func (h *Handler) Lookup(ip string) string {
+	countryCode := "NA"
+	if !govalidator.IsIP(ip) {
+		return countryCode
+	}
+
+	switch {
+	case govalidator.IsIPv4(ip):
+		return h.lookup(ip, IPv4)
+	case govalidator.IsIPv6(ip):
+		return h.lookup(ip, IPv6)
+	}
+
+	return countryCode
+}
+
+func (h *Handler) lookup(ip, ipVersion string) string {
 	ipNet := net.ParseIP(ip)
 
 	countryCode := "NA"
+	var bucket string
+	var byteCount int
 
-	for i := 0; i < 32; i++ {
-		mask := net.CIDRMask(i, 32)
+	switch ipVersion {
+	case IPv4:
+		bucket = BoltBucketv4
+		byteCount = IPv4ByteCount
+	case IPv6:
+		bucket = BoltBucketv6
+		byteCount = IPv6ByteCount
+	}
+
+	for i := 0; i < byteCount; i++ {
+		mask := net.CIDRMask(i, byteCount)
 		network := ipNet.Mask(mask).String() + "/" + strconv.Itoa(i)
 
 		if err := h.Db.View(func(tx *bolt.Tx) error {
-			v := tx.Bucket([]byte(BoltBucketv4)).Get([]byte(network))
+			v := tx.Bucket([]byte(bucket)).Get([]byte(network))
 			if v != nil {
 				countryCode = string(v)
 			}
@@ -64,6 +92,7 @@ func (h *Handler) Lookupv4(ip string) string {
 			log.Printf("failed to get key %s: %v", network, err)
 		}
 	}
+
 	return countryCode
 }
 
@@ -135,11 +164,8 @@ func (h *Handler) PopulateData() error {
 					country, ipVersion, ipAddress, mask = parts[1], parts[2], parts[3], parts[4]
 				}
 
-				if ipVersion == "ipv4" {
-					if err := h.handleIPv4(ipAddress, country, mask); err != nil {
-						log.Print(err)
-						continue
-					}
+				if err := h.handleIP(ipAddress, country, mask, ipVersion); err != nil {
+					continue
 				}
 			}
 
@@ -168,15 +194,29 @@ func (h *Handler) CreateBucket(bucket string) error {
 	return nil
 }
 
-func (h *Handler) handleIPv4(ip, country, mask string) error {
+func (h *Handler) handleIP(ip, country, mask, ipVersion string) error {
+	var bucket string
+	var byteCount int
+
+	switch ipVersion {
+	case IPv4:
+		bucket = BoltBucketv4
+		byteCount = IPv4ByteCount
+	case IPv6:
+		bucket = BoltBucketv6
+		byteCount = IPv6ByteCount
+	default:
+		return errors.New("unrecognised ip version")
+	}
+
 	count, err := strconv.Atoi(mask)
 	if err != nil {
 		return errors.Wrap(err, "failed to parse ip mask")
 	}
 
-	subnet := computeSubnet(ip, count)
+	subnet := computeSubnet(ip, count, byteCount)
 	if err := h.Db.Update(func(tx *bolt.Tx) error {
-		return tx.Bucket([]byte(BoltBucketv4)).Put([]byte(subnet), []byte(country))
+		return tx.Bucket([]byte(bucket)).Put([]byte(subnet), []byte(country))
 	}); err != nil {
 		return errors.Wrap(err, "failed to update k/v in db")
 	}
@@ -184,8 +224,8 @@ func (h *Handler) handleIPv4(ip, country, mask string) error {
 	return nil
 }
 
-func computeSubnet(ipstart string, ipcount int) string {
-	mask := 32 - int(math.Log2(float64(ipcount)))
+func computeSubnet(ipstart string, ipcount, byteCount int) string {
+	mask := byteCount - int(math.Log2(float64(ipcount)))
 	return ipstart + "/" + strconv.Itoa(mask)
 }
 
@@ -200,6 +240,16 @@ const (
 	BoltBucketv4 = "ipv4"
 	// BoltBucketv6 containing ipv6 data
 	BoltBucketv6 = "ipv6"
+
+	// IPv4 represents ipv4 address
+	IPv4 = "ipv4"
+	// IPv6 represents ipv6 address
+	IPv6 = "ipv6"
+
+	// IPv4ByteCount is the ipv4 byte count
+	IPv4ByteCount = 32
+	// IPv6ByteCount is the ipv6 byte count
+	IPv6ByteCount = 128
 
 	// URLs for each RIR containing geoip data.
 	Arin    = "https://ftp.arin.net/pub/stats/arin/delegated-arin-extended-latest"
