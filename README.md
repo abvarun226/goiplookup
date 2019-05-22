@@ -5,7 +5,7 @@
 This library maps an IP address to a country
 
 ## Description
-It basically uses the Regional Internet Registries (APNIC, ARIN, LACNIC, RIPE NCC and AFRINIC) to populate a database with the IP address blocks allocated to a country. It then uses this database, which is refereshed on a daily basis, to lookup country to which an IP address belongs to.
+The library uses the Regional Internet Registries (APNIC, ARIN, LACNIC, RIPE NCC and AFRINIC) to populate a database with the IP address blocks allocated to a country. It then uses this database, which is refreshed on a daily basis, to lookup country to which an IP address belongs to.
 
 ## Examples
 Examples in `examples/` directory.
