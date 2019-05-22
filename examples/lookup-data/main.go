@@ -26,7 +26,7 @@ func main() {
 	for _, ip := range ips {
 		country, err := h.Lookup(ip)
 		if err != nil {
-			fmt.Printf("error when looking up ip addres: %v", err)
+			fmt.Printf("error when looking up ip address: %v", err)
 		}
 		fmt.Printf("%15s : %s\n", ip, country)
 	}
