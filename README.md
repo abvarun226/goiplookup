@@ -2,6 +2,8 @@
 
 [![GoDoc](https://godoc.org/github.com/abvarun226/goiplookup?status.svg)](https://godoc.org/github.com/abvarun226/goiplookup)
 [![Go Report Card](https://goreportcard.com/badge/github.com/abvarun226/goiplookup)](https://goreportcard.com/report/github.com/abvarun226/goiplookup)
+[![Build Status](https://travis-ci.org/abvarun226/goiplookup.svg?branch=master)](https://travis-ci.org/abvarun226/goiplookup)
+[![codecov](https://codecov.io/gh/abvarun226/goiplookup/branch/master/graph/badge.svg)](https://codecov.io/gh/abvarun226/goiplookup)
 
 This library maps an IP address to a country without depending on external geo databases like Maxmind.
 
