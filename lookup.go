@@ -12,7 +12,7 @@ import (
 
 // Lookup returns the country code given the ipv4/ipv6 address.
 func (h *Handler) Lookup(ip string) (string, error) {
-	countryCode := "NA"
+	countryCode := "unknown"
 	if !govalidator.IsIP(ip) {
 		return countryCode, errors.New("not a valid ip")
 	}
@@ -30,7 +30,7 @@ func (h *Handler) Lookup(ip string) (string, error) {
 func (h *Handler) lookup(ip, ipVersion string) (string, error) {
 	ipNet := net.ParseIP(ip)
 
-	countryCode := "NA"
+	countryCode := "unknown"
 	var bucket string
 	var byteCount int
 

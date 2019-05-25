@@ -3,7 +3,6 @@ package main
 import (
 	"net/http"
 	"log"
-	"fmt"
 	"time"
 	"encoding/json"
 	"sync"
@@ -59,7 +58,7 @@ func (h *Handler) LookupEndpoint(w http.ResponseWriter, r *http.Request) {
 			res.Country , err = h.IPLookup.Lookup(ip)
 			if err != nil {
 				log.Printf("error when looking up ip address %s: %v", ip, err)
-				res.Err = fmt.Errorf("failed to lookup ip address")
+				res.Err = err.Error()
 			}
 		
 			switch {
@@ -97,7 +96,7 @@ type lookupResult struct {
 	Country string `json:"country"`
 	IP string `json:"ip"`
 	Version string `json:"version"`
-	Err error `json:"error,omitempty"`
+	Err string `json:"error,omitempty"`
 }
 
 const (
