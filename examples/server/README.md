@@ -10,7 +10,7 @@ $ ./server
 
 ## Sample Output
 ```
-curl "http://localhost:8085/iplookup?ip=2001:4c0:0:0:0:0:0:0&ip=49.206.13.16&ip=216.58.196.174&ip=3.91.28.69" -s | jq .
+$ curl -s "http://localhost:8085/iplookup?ip=2001:4c0:0:0:0:0:0:0&ip=49.206.13.16&ip=216.58.196.174&ip=3.91.28.69" | jq .
 [
   {
     "country": "IN",
