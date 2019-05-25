@@ -11,6 +11,8 @@ The library uses the Regional Internet Registries (APNIC, ARIN, LACNIC, RIPE NCC
 ## Examples
 Examples in `examples/` directory.
 
+`examples` directory also has an example of an HTTP server that uses this library.
+
 ### How to load data into database?
 ```
 package main
