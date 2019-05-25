@@ -1,9 +1,9 @@
-# Geo IP Lookup
+# Golang IP Lookup Library
 
 [![GoDoc](https://godoc.org/github.com/abvarun226/goiplookup?status.svg)](https://godoc.org/github.com/abvarun226/goiplookup)
 [![Go Report Card](https://goreportcard.com/badge/github.com/abvarun226/goiplookup)](https://goreportcard.com/report/github.com/abvarun226/goiplookup)
 
-This library maps an IP address to a country
+This library maps an IP address to a country without depending on external geo databases like Maxmind.
 
 ## Description
 The library uses the Regional Internet Registries (APNIC, ARIN, LACNIC, RIPE NCC and AFRINIC) to populate a database with the IP address blocks allocated to a country. It then uses this database, which is refreshed on a daily basis, to lookup country to which an IP address belongs to.
