@@ -1,3 +1,4 @@
 vendor/
 my.db
 files/
+coverage.txt
