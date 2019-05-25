@@ -1,4 +1,4 @@
-package geoiplookup
+package goiplookup
 
 import (
 	"net/http"

@@ -1,4 +1,4 @@
-module github.com/abvarun226/geoiplookup
+module github.com/abvarun226/goiplookup
 
 go 1.12
 

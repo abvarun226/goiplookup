@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/abvarun226/geoiplookup"
+	"github.com/abvarun226/goiplookup"
 )
 
 func main() {
@@ -18,8 +18,8 @@ func main() {
 
 	ips := flag.Args()
 
-	h := geoiplookup.New(
-		geoiplookup.WithDBPath(DBPath),
+	h := goiplookup.New(
+		goiplookup.WithDBPath(DBPath),
 	)
 	defer h.Close()
 

@@ -1,7 +1,7 @@
 # Geo IP Lookup
 
-[![GoDoc](https://godoc.org/github.com/abvarun226/geoiplookup?status.svg)](https://godoc.org/github.com/abvarun226/geoiplookup)
-[![Go Report Card](https://goreportcard.com/badge/github.com/abvarun226/geoiplookup)](https://goreportcard.com/report/github.com/abvarun226/geoiplookup)
+[![GoDoc](https://godoc.org/github.com/abvarun226/goiplookup?status.svg)](https://godoc.org/github.com/abvarun226/goiplookup)
+[![Go Report Card](https://goreportcard.com/badge/github.com/abvarun226/goiplookup)](https://goreportcard.com/report/github.com/abvarun226/goiplookup)
 
 This library maps an IP address to a country
 
@@ -20,14 +20,14 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/abvarun226/geoiplookup"
+	"github.com/abvarun226/goiplookup"
 )
 
 func main() {
-	h := geoiplookup.New(
-		geoiplookup.WithDBPath(DBPath),
-		geoiplookup.WithClient(&http.Client{Timeout: 60 * time.Minute}),
-		geoiplookup.WithDownloadRIRFiles(),
+	h := goiplookup.New(
+		goiplookup.WithDBPath(DBPath),
+		goiplookup.WithClient(&http.Client{Timeout: 60 * time.Minute}),
+		goiplookup.WithDownloadRIRFiles(),
 	)
 	defer h.Close()
 
@@ -51,7 +51,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/abvarun226/geoiplookup"
+	"github.com/abvarun226/goiplookup"
 )
 
 func main() {
@@ -64,8 +64,8 @@ func main() {
 
 	ips := flag.Args()
 
-	h := geoiplookup.New(
-		geoiplookup.WithDBPath(DBPath),
+	h := goiplookup.New(
+		goiplookup.WithDBPath(DBPath),
 	)
 	defer h.Close()
 

@@ -5,14 +5,14 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/abvarun226/geoiplookup"
+	"github.com/abvarun226/goiplookup"
 )
 
 func main() {
-	h := geoiplookup.New(
-		geoiplookup.WithDBPath(DBPath),
-		geoiplookup.WithClient(&http.Client{Timeout: 60 * time.Minute}),
-		// geoiplookup.WithDownloadRIRFiles(),
+	h := goiplookup.New(
+		goiplookup.WithDBPath(DBPath),
+		goiplookup.WithClient(&http.Client{Timeout: 60 * time.Minute}),
+		// goiplookup.WithDownloadRIRFiles(),
 	)
 	defer h.Close()
 

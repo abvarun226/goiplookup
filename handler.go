@@ -1,4 +1,4 @@
-package geoiplookup
+package goiplookup
 
 import (
 	"log"
@@ -64,7 +64,7 @@ var (
 	GeoIPDataURLs = []string{Arin, RipeNcc, Apnic, Afrinic, Lacnic}
 )
 
-// Constants used in geoiplookup.
+// Constants used in goiplookup.
 const (
 	// BoltBucketv4 containing ipv4 data
 	BoltBucketv4 = "ipv4"
