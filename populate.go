@@ -19,10 +19,6 @@ import (
 
 // PopulateData extracts the geoip data for each RIR and populates the database.
 func (h *Handler) PopulateData() error {
-	if err := h.InitializeBuckets(); err != nil {
-		return errors.Wrap(err, "failed to populate geoip data")
-	}
-
 	fileNames := make([]string, 0)
 
 	for _, rirURL := range GeoIPDataURLs {
@@ -49,6 +45,7 @@ func (h *Handler) PopulateData() error {
 // downloadRIRFiles downloads the geoip data to files.
 func (h *Handler) downloadRIRFiles() error {
 	var g errgroup.Group
+	os.Mkdir(FileDir, 0755)
 
 	for _, rirURL := range GeoIPDataURLs {
 		currURL := rirURL
@@ -69,7 +66,8 @@ func (h *Handler) downloadRIRFiles() error {
 			defer rsp.Body.Close()
 
 			log.Printf("saving data to file: %s", fileName)
-			file, err := os.Create(fileName)
+			path := FileDir + fileName
+			file, err := os.Create(path)
 			if err != nil {
 				return errors.Wrap(err, "failed to create local file")
 			}
@@ -86,6 +84,7 @@ func (h *Handler) downloadRIRFiles() error {
 // processRIRFiles processes the downloaded rir files and updates db.
 func (h *Handler) processRIRFiles(fileNames []string) error {
 	var g errgroup.Group
+	os.Mkdir(FileDir, 0755)
 
 	for _, f := range fileNames {
 		fileName := f
@@ -93,7 +92,8 @@ func (h *Handler) processRIRFiles(fileNames []string) error {
 		g.Go(func() error {
 			log.Printf("processing %s", fileName)
 
-			file, err := os.Open(fileName)
+			path := FileDir + fileName
+			file, err := os.Open(path)
 			if err != nil {
 				return errors.Wrapf(err, "failed to open file %s", fileName)
 			}

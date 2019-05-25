@@ -22,10 +22,14 @@ func New(opt ...Option) *Handler {
 		log.Fatal(err)
 	}
 
-	return &Handler{
+	h := &Handler{
 		Db:   db,
 		Opts: opts,
 	}
+
+	h.InitializeBuckets()
+
+	return h
 }
 
 // Close will close the db connection.
@@ -80,6 +84,9 @@ const (
 	IPv4ByteCount = 32
 	// IPv6ByteCount is the ipv6 byte count
 	IPv6ByteCount = 128
+
+	// FileDir is the directory that contains the rir files.
+	FileDir = "files/"
 
 	// URLs for each RIR containing geoip data.
 	Arin    = "https://ftp.arin.net/pub/stats/arin/delegated-arin-extended-latest"

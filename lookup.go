@@ -43,22 +43,22 @@ func (h *Handler) lookup(ip, ipVersion string) (string, error) {
 		byteCount = IPv6ByteCount
 	}
 
+	finalErr := fmt.Errorf("ip not found")
 	for i := 0; i < byteCount; i++ {
 		mask := net.CIDRMask(i, byteCount)
 		network := ipNet.Mask(mask).String() + "/" + strconv.Itoa(i)
 
-		if err := h.Db.View(func(tx *bolt.Tx) error {
+		h.Db.View(func(tx *bolt.Tx) error {
 			v := tx.Bucket([]byte(bucket)).Get([]byte(network))
 			if v != nil {
 				countryCode = string(v)
+				finalErr = nil
 			}
 			return nil
-		}); err != nil {
-			return countryCode, errors.Wrapf(err, "failed to get key %s", network)
-		}
+		})
 	}
 
-	return countryCode, nil
+	return countryCode, finalErr
 }
 
 // IterateDB iterates over a given bucket in DB.
