@@ -85,8 +85,8 @@ const (
 	// IPv6ByteCount is the ipv6 byte count
 	IPv6ByteCount = 128
 
-	// FileDir is the directory that contains the rir files.
-	FileDir = "files/"
+	// DefaultFileDir is the default directory that contains the rir files.
+	DefaultFileDir = "./files"
 
 	// URLs for each RIR containing geoip data.
 	Arin    = "https://ftp.arin.net/pub/stats/arin/delegated-arin-extended-latest"

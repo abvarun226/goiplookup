@@ -10,6 +10,7 @@ type Options struct {
 	DBPath           string
 	HTTPClient       *http.Client
 	DownloadRIRFiles bool
+	RIRFilesDir      string
 }
 
 // Option type.
@@ -37,11 +38,19 @@ func WithClient(client *http.Client) Option {
 	}
 }
 
+// WithRIRFilesDir sets the directory to download RIR files to.
+func WithRIRFilesDir(dirpath string) Option {
+	return func(o *Options) {
+		o.RIRFilesDir = dirpath
+	}
+}
+
 // NewOptions returns a new Options object.
 func NewOptions(options ...Option) Options {
 	opts := Options{
-		DBPath:     DefaultDBPath,
-		HTTPClient: &http.Client{Timeout: DefaultTimeout},
+		DBPath:      DefaultDBPath,
+		HTTPClient:  &http.Client{Timeout: DefaultTimeout},
+		RIRFilesDir: DefaultFileDir,
 	}
 
 	for _, o := range options {
