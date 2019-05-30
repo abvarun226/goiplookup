@@ -13,6 +13,7 @@ func Setup() (*goiplookup.Handler, string) {
 	h := goiplookup.New(
 		goiplookup.WithDBPath(tmpfile),
 		goiplookup.WithDownloadRIRFiles(),
+		goiplookup.WithRIRFilesDir(goiplookup.DefaultFileDir),
 	)
 
 	if err := h.InitializeBuckets(); err != nil {
