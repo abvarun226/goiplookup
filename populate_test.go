@@ -17,7 +17,7 @@ func TestHandler_PopulateData(t *testing.T) {
 	defer func() {
 		h.Close()
 		os.Remove(tmpfile)
-		os.RemoveAll(goiplookup.FileDir)
+		os.RemoveAll(goiplookup.DefaultFileDir)
 	}()
 
 	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
